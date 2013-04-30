@@ -1,0 +1,5 @@
+#!/bin/sh
+
+/sbin/service radvd stop
+
+/usr/sbin/dhcp6ctl stop

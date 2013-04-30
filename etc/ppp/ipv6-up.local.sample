@@ -1,0 +1,5 @@
+#!/bin/sh
+
+/usr/sbin/dhcp6c $REALDEVICE
+
+/sbin/service radvd start

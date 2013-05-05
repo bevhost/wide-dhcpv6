@@ -20,9 +20,15 @@
 # Source2 is the redhat bits, some of which I took from a SUSE build of this.
 #
 
+%if 0%{?fedora} >= 15
+%global systemd systemd_unit
+%endif
+%if 0%{?fedora} >= 18
+%global systemd systemd
+%endif
 
 Name:           wide-dhcpv6
-BuildRequires:  bison flex
+BuildRequires:  bison flex %{?systemd}
 %{?fedora:BuildRequires: flex-static}
 License:        BSD
 Group:          System Environment/Daemons
@@ -80,7 +86,7 @@ mkdir -p %{buildroot}%{_initrddir}
 mkdir -p %{buildroot}%{_mandir}/man{8,5}
 mkdir -p %{buildroot}%{_sharedstatedir}/dhcpv6/
 mkdir -p %{buildroot}/var/run/dhcpv6/
-install -m 755 dhcp6c dhcp6s dhcp6relay dhcp6ctl %{buildroot}/usr/sbin
+install -m 755 dhcp6c dhcp6s dhcp6relay dhcp6ctl %{buildroot}%{_sbindir}
 install -m 644 dhcp6c.8 %{buildroot}/%{_mandir}/man8
 install -m 644 dhcp6s.8 %{buildroot}/%{_mandir}/man8
 install -m 644 dhcp6relay.8 %{buildroot}/%{_mandir}/man8
@@ -91,22 +97,44 @@ install -m 755 debian/scripts/dhcp6c-script %{buildroot}%{_sysconfdir}/%{name}/d
 install -m 644 dhcp6c.conf.sample %{buildroot}%{_sysconfdir}/%{name}/dhcp6c.conf
 install -m 644 dhcp6s.conf.sample %{buildroot}%{_sysconfdir}/%{name}/dhcp6s.conf
 install -m 644 %{rh_dir}/etc/sysconfig/* %{buildroot}%{_sysconfdir}/sysconfig/
-install -m 755 %{rh_dir}/etc/init.d/* %{buildroot}%{_initrddir}/
 install -m 755 %{rh_dir}/etc/ppp/* %{buildroot}%{_sysconfdir}/ppp/
+%if 0%{?_unitdir}
+install -m 644 %{rh_dir}/usr/lib/systemd/system/* %{buildroot}%{_unitdir}/
+%else
+install -m 755 %{rh_dir}/etc/init.d/* %{buildroot}%{_initrddir}/
+%endif
 
 %post
-if [ "$1" = 0 ] ; then
-/sbin/chkconfig dhcp6s off
+if [ "$1" -eq 0 ] ; then
+%if 0%{?_unitdir}
+/bin/systemctl --no-reload disable dhcp6c.service > /dev/null 2>&1 || :
+/bin/systemctl --no-reload disable dhcp6r.service > /dev/null 2>&1 || :
+/bin/systemctl --no-reload disable dhcp6s.service > /dev/null 2>&1 || :
+%else
+/sbin/chkconfig dhcp6c off
 /sbin/chkconfig dhcp6r off
+/sbin/chkconfig dhcp6s off
+%endif
 fi
 exit 0
 
 %preun
-if [ "$1" = 0 ] ; then
+if [ "$1" -eq 0 ] ; then
+%if 0%{?_unitdir}
+/bin/systemctl --no-reload disable dhcp6c.service > /dev/null 2>&1 || :
+/bin/systemctl --no-reload disable dhcp6r.service > /dev/null 2>&1 || :
+/bin/systemctl --no-reload disable dhcp6s.service > /dev/null 2>&1 || :
+/bin/systemctl stop dhcp6c.service > /dev/null 2>&1 || :
+/bin/systemctl stop dhcp6r.service > /dev/null 2>&1 || :
+/bin/systemctl stop dhcp6s.service > /dev/null 2>&1 || :
+%else
+/sbin/service dhcp6c stop > /dev/null 2>&1
 /sbin/service dhcp6r stop > /dev/null 2>&1
 /sbin/service dhcp6s stop > /dev/null 2>&1
+/sbin/chkconfig --del dhcp6c
 /sbin/chkconfig --del dhcp6r
 /sbin/chkconfig --del dhcp6s
+%endif
 fi
 exit 0
 
@@ -124,13 +152,18 @@ rm -rf %{buildroot}
 %config(noreplace) /%{_sysconfdir}/%{name}/dhcp6c.conf
 %config(noreplace) /%{_sysconfdir}/%{name}/dhcp6s.conf
 /%{_sysconfdir}/ppp/*
+%if 0%{?_unitdir}
+/%{_unitdir}/*
+%else
 /%{_initrddir}/*
+%endif
 /%{_sysconfdir}/%{name}/dhcp6c-script
 
 %changelog
-* Wed May 1 2013 dave@bevhost.com 20080615-11.1.2
+* Mon May 6 2013 dave@bevhost.com 20080615-11.1.2
 - use macros in spec file wherever possible
 - move redhat source to github
+- add support for systemd
 
 * Wed Apr 24 2013 dave@bevhost.com 20080615-11.1.1
 - Move sysconfdir from /etc to /etc/wide-dhcpv6 to match man pages

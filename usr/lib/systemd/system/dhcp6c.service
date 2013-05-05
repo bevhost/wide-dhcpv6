@@ -1,0 +1,10 @@
+[Unit]
+Description=Wide DHCPv6 client
+
+[Service]
+EnvironmentFile=-/etc/sysconfig/dhcp6c
+ExecStart=/usr/sbin/dhcp6c -f $DHCP6CARGS $DHCP6CIF
+
+[Install]
+WantedBy=network.target
+

@@ -1,0 +1,10 @@
+[Unit]
+Description=Wide DHCPv6 relay agent
+
+[Service]
+EnvironmentFile=-/etc/sysconfig/dhcp6r
+ExecStart=/usr/sbin/dhcp6relay -f $DHCP6RARGS
+
+[Install]
+WantedBy=network.target
+

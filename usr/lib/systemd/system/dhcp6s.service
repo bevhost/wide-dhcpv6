@@ -1,0 +1,10 @@
+[Unit]
+Description=Wide DHCPv6 server
+
+[Service]
+EnvironmentFile=-/etc/sysconfig/dhcp6s
+ExecStart=/usr/sbin/dhcp6s -f $DHCP6SARGS $DHCP6SIF
+
+[Install]
+WantedBy=network.target
+

@@ -1,0 +1,90 @@
+#!/bin/sh
+#
+#
+# chkconfig: - 66 36
+# description: dhcp6c requests IPv6 addresses and prefix assignment \
+#              administrative policy and configuration information from \
+#              DHCPv6 servers.  dhcp6c also manages those addresses and \
+#              prefixes, such as IPv6 addresses, prefixes, DNS server \
+#              addresses, or ntp server addresses.
+# processname: dhcp6c
+# config: /etc/dhcp6c.conf
+# config: /etc/sysconfig/dhcp6c
+
+. /etc/init.d/functions
+
+RETVAL=0
+
+prog=dhcp6c
+dhcp6c=/usr/sbin/dhcp6c
+lockfile=/var/lock/subsys/dhcp6c
+
+# Check that networking is up.
+# networking is not up, return 1 for generic error
+. /etc/sysconfig/network
+[ $NETWORKING = "no" ] && exit 1
+
+start() {
+    # return 5 if program is not installed
+    [ -x $dhcp6c ] || exit 5
+
+    # return 6 if program is not configured
+    [ -f /etc/wide-dhcpv6/dhcp6c.conf ] || exit 6
+    [ -f /etc/sysconfig/dhcp6c ] || exit 6
+    . /etc/sysconfig/dhcp6c
+
+    if [ -z "$DHCP6SIF" ]; then
+        logger -s -t "$prog" -p "daemon.info" "Warning: $prog listening on ALL interfaces"
+    fi
+
+    echo -n $"Starting $prog: "
+    daemon $dhcp6c -c /etc/dhcp6c.conf $DHCP6CARGS $DHCP6CIF
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch $lockfile
+    return $RETVAL
+}
+
+stop() {
+    echo -n $"Shutting down $prog: "
+    killproc $prog -TERM
+    RETVAL=$?
+    echo
+    rm -f $lockfile
+    return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+    start)
+        start
+        RETVAL=$?
+        ;;
+    stop)
+        stop
+        RETVAL=$?
+        ;;
+    restart|force-reload)
+        [ -f $lockfile ] && stop
+        start
+        RETVAL=$?
+        ;;
+    try-restart|reload)
+        RETVAL=3
+        ;;
+    condrestart)
+        if [ -f $lockfile ]; then
+            stop && start
+        fi
+        ;;
+    status)
+        status $prog
+        RETVAL=$?
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|restart|try-restart|reload|force-reload|status}"
+        RETVAL=3
+        ;;
+esac
+
+exit $RETVAL

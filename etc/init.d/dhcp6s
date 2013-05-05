@@ -1,21 +1,5 @@
 #!/bin/sh
 #
-### BEGIN INIT INFO
-# Provides: dhcp6s
-# Default-Start:
-# Default-Stop:
-# Should-Start:
-# Required-Start: $network
-# Required-Stop:
-# Short-Description: Start and stop the DHCPv6 server agent
-# Description: dhcp6s provides IPv6 addresses and prefix assignment
-#              administrative policy and configuration information for
-#              DHCPv6 clients.  dhcp6s also manages those addresses and
-#              prefixes, such as IPv6 addresses, prefixes, DNS server
-#              addresses, or ntp server addresses.
-### END INIT INFO
-#
-# The fields below are left around for legacy tools (will remove later).
 #
 # chkconfig: - 66 36
 # description: dhcp6s provides IPv6 addresses and prefix assignment \
@@ -45,7 +29,7 @@ start() {
     [ -x $dhcp6s ] || exit 5
 
     # return 6 if program is not configured
-    [ -f /etc/dhcp6s.conf ] || exit 6
+    [ -f /etc/wide-dhcpv6/dhcp6s.conf ] || exit 6
     [ -f /etc/sysconfig/dhcp6s ] || exit 6
     . /etc/sysconfig/dhcp6s
 

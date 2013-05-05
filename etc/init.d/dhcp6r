@@ -1,19 +1,5 @@
 #!/bin/sh
 #
-### BEGIN INIT INFO
-# Provides: dhcp6r
-# Default-Start:
-# Default-Stop:
-# Should-Start:
-# Required-Start: $network
-# Required-Stop:
-# Short-Description: Start and stop the DHCPv6 relay agent
-# Description: dhcp6r acts as a DHCPv6 relay agent forwarding DHCPv6 messages
-#              from clients to servers and vice versa.
-### END INIT INFO
-#
-# The fields below are left around for legacy tools (will remove later).
-#
 # chkconfig: - 66 36
 # description: dhcp6r acts as a DHCPv6 relay agent forwarding DHCPv6 messages \
 #              from clients to servers and vice versa.

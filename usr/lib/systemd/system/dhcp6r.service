@@ -1,5 +1,6 @@
 [Unit]
 Description=Wide DHCPv6 relay agent
+Documentation=man:dhcp6relay(8)
 
 [Service]
 EnvironmentFile=-/etc/sysconfig/dhcp6r

@@ -1,5 +1,6 @@
 [Unit]
 Description=Wide DHCPv6 server
+Documentation=man:dhcp6s(8) man:dhcp6s.conf(5)
 
 [Service]
 EnvironmentFile=-/etc/sysconfig/dhcp6s

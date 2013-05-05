@@ -13,27 +13,33 @@
 # published by the Open Source Initiative.
 
 # The primary reason for making this package is that the normal dhcp with
-# fedora/redhat does not support DHCPv6 Prefix Delegation client on PPP 
+# fedora/redhat did not support DHCPv6 Prefix Delegation client on PPP 
 #
 # Source0 is the unmodified original BSD Source
 # Source1 is the unmodified ubuntu bits including glibc patches
 # Source2 is the redhat bits, some of which I took from a SUSE build of this.
 #
 
+
 Name:           wide-dhcpv6
 BuildRequires:  bison flex
 %{?fedora:BuildRequires: flex-static}
-Url:            http://launchpad.net/ubuntu/+source/wide-dhcpv6/20080615-11.1/
 License:        BSD
 Group:          System Environment/Daemons
 Summary:        DHCP Client and Server for IPv6
 Version:        20080615
+
 %global ubuntu_release 11.1
-%global my_release 1
+%global my_release 2
+%global commit e3d9b24319a4d630fc01960343fb9b72eedbf26c
+%global shortcommit %(c=%{commit}; echo ${c:0:7})
+%global rh_dir %{name}-%{commit}
+
+Url:            https://github.com/bevhost/wide-dhcpv6
 Release:        %{ubuntu_release}.%{my_release}%{dist}
 Source0:        http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
-Source1:        http://repo.bevhost.com/fedora/%{name}_%{version}.redhat.tar.gz
-Source2:        https://launchpad.net/ubuntu/+archive/primary/+files/%{name}_%{version}-%{ubuntu_release}.debian.tar.gz
+Source1:        https://launchpad.net/ubuntu/+archive/primary/+files/%{name}_%{version}-%{ubuntu_release}.debian.tar.gz
+Source2:        http://{url}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
@@ -84,9 +90,9 @@ install -m 644 dhcp6s.conf.5 %{buildroot}/%{_mandir}/man5
 install -m 755 debian/scripts/dhcp6c-script %{buildroot}%{_sysconfdir}/%{name}/dhcp6c-script
 install -m 644 dhcp6c.conf.sample %{buildroot}%{_sysconfdir}/%{name}/dhcp6c.conf
 install -m 644 dhcp6s.conf.sample %{buildroot}%{_sysconfdir}/%{name}/dhcp6s.conf
-install -m 644 etc/sysconfig/* %{buildroot}%{_sysconfdir}/sysconfig/
-install -m 755 etc/init.d/* %{buildroot}%{_initrddir}/
-install -m 755 etc/ppp/* %{buildroot}%{_sysconfdir}/ppp/
+install -m 644 %{rh_dir}/etc/sysconfig/* %{buildroot}%{_sysconfdir}/sysconfig/
+install -m 755 %{rh_dir}/etc/init.d/* %{buildroot}%{_initrddir}/
+install -m 755 %{rh_dir}/etc/ppp/* %{buildroot}%{_sysconfdir}/ppp/
 
 %post
 if [ "$1" = 0 ] ; then
@@ -124,6 +130,7 @@ rm -rf %{buildroot}
 %changelog
 * Wed May 1 2013 dave@bevhost.com 20080615-11.1.2
 - use macros in spec file wherever possible
+- move redhat source to github
 
 * Wed Apr 24 2013 dave@bevhost.com 20080615-11.1.1
 - Move sysconfdir from /etc to /etc/wide-dhcpv6 to match man pages

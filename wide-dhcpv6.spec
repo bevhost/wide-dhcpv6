@@ -19,6 +19,9 @@
 # Source1 is the unmodified ubuntu bits including glibc patches
 # Source2 is the redhat bits, some of which I took from a SUSE build of this.
 #
+# use "spectool -g wide-dhcpv6.spec" to download the sources and
+# rename the commit string to the correct name (shown in the download).
+#
 
 %if 0%{?fedora} >= 15
 %global systemd systemd_unit
@@ -45,7 +48,7 @@ Url:            https://github.com/bevhost/wide-dhcpv6
 Release:        %{ubuntu_release}.%{my_release}%{dist}
 Source0:        http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
 Source1:        https://launchpad.net/ubuntu/+archive/primary/+files/%{name}_%{version}-%{ubuntu_release}.debian.tar.gz
-Source2:        http://{url}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
+Source2:        %{url}/archive/%{commit}/%{name}-%{version}-%{shortcommit}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description

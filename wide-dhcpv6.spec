@@ -23,12 +23,19 @@
 # rename the commit string to the correct name (shown in the download).
 #
 
+%global ubuntu_release 11.1
+%global my_release 2
+%global commit 594ad0d252acc910b791dbf3caf6c0474581a2b7
+%global shortcommit %(c=%{commit}; echo ${c:0:7})
+%global rh_dir %{name}-%{commit}
+
 %if 0%{?fedora} >= 15
-%global systemd systemd_unit
+%global systemd systemd-units
 %endif
 %if 0%{?fedora} >= 18
 %global systemd systemd
 %endif
+%{?_unitdir:%global with_systemd 1}
 
 Name:           wide-dhcpv6
 BuildRequires:  bison flex %{?systemd}
@@ -37,13 +44,6 @@ License:        BSD
 Group:          System Environment/Daemons
 Summary:        DHCP Client and Server for IPv6
 Version:        20080615
-
-%global ubuntu_release 11.1
-%global my_release 2
-%global commit e3d9b24319a4d630fc01960343fb9b72eedbf26c
-%global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global rh_dir %{name}-%{commit}
-
 Url:            https://github.com/bevhost/wide-dhcpv6
 Release:        %{ubuntu_release}.%{my_release}%{dist}
 Source0:        http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
@@ -85,7 +85,6 @@ mkdir -p %{buildroot}%{_sbindir}
 mkdir -p %{buildroot}%{_sysconfdir}/ppp
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
 mkdir -p %{buildroot}%{_sysconfdir}/%{name}
-mkdir -p %{buildroot}%{_initrddir}
 mkdir -p %{buildroot}%{_mandir}/man{8,5}
 mkdir -p %{buildroot}%{_sharedstatedir}/dhcpv6/
 mkdir -p %{buildroot}/var/run/dhcpv6/
@@ -101,15 +100,17 @@ install -m 644 dhcp6c.conf.sample %{buildroot}%{_sysconfdir}/%{name}/dhcp6c.conf
 install -m 644 dhcp6s.conf.sample %{buildroot}%{_sysconfdir}/%{name}/dhcp6s.conf
 install -m 644 %{rh_dir}/etc/sysconfig/* %{buildroot}%{_sysconfdir}/sysconfig/
 install -m 755 %{rh_dir}/etc/ppp/* %{buildroot}%{_sysconfdir}/ppp/
-%if 0%{?_unitdir}
+%if 0%{?with_systemd}
+mkdir -p %{buildroot}%{_unitdir}
 install -m 644 %{rh_dir}/usr/lib/systemd/system/* %{buildroot}%{_unitdir}/
 %else
+mkdir -p %{buildroot}%{_initrddir}
 install -m 755 %{rh_dir}/etc/init.d/* %{buildroot}%{_initrddir}/
 %endif
 
 %post
 if [ "$1" -eq 0 ] ; then
-%if 0%{?_unitdir}
+%if 0%{?with_systemd}
 /bin/systemctl --no-reload disable dhcp6c.service > /dev/null 2>&1 || :
 /bin/systemctl --no-reload disable dhcp6r.service > /dev/null 2>&1 || :
 /bin/systemctl --no-reload disable dhcp6s.service > /dev/null 2>&1 || :
@@ -123,7 +124,7 @@ exit 0
 
 %preun
 if [ "$1" -eq 0 ] ; then
-%if 0%{?_unitdir}
+%if 0%{?with_systemd}
 /bin/systemctl --no-reload disable dhcp6c.service > /dev/null 2>&1 || :
 /bin/systemctl --no-reload disable dhcp6r.service > /dev/null 2>&1 || :
 /bin/systemctl --no-reload disable dhcp6s.service > /dev/null 2>&1 || :
@@ -155,7 +156,7 @@ rm -rf %{buildroot}
 %config(noreplace) /%{_sysconfdir}/%{name}/dhcp6c.conf
 %config(noreplace) /%{_sysconfdir}/%{name}/dhcp6s.conf
 /%{_sysconfdir}/ppp/*
-%if 0%{?_unitdir}
+%if 0%{?with_systemd}
 /%{_unitdir}/*
 %else
 /%{_initrddir}/*

@@ -34,3 +34,7 @@ eg:
   rpmbuild -ba wide-dhcpv6.spec
 
 
+This package has been updated and customised more for fedora 19 & 20
+To get these versions please goto http://repo.bevhost.com/fedora/
+
+
